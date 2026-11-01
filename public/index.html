@@ -1,0 +1,22 @@
+<!doctype html><html lang="en-NZ"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Shelf Audit Capture</title><meta name="theme-color" content="#0b0b0c">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="SA Capture">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css"></head><body>
+<header class="top"><div class="brand"><span class="tag">SA</span> Capture</div><div id="net" class="pill">Online</div><div id="tally" class="pill mono">0 today</div></header>
+<section id="storebar"><label for="store">Store</label><div class="ac"><input id="store" autocomplete="off" placeholder="Finding the nearest store…"><ul id="storelist" hidden></ul></div><div id="storehint" class="hint"></div></section>
+<section id="cam"><video id="v" playsinline muted autoplay></video><div class="frame"><span></span></div>
+ <div id="camoff"><p>The camera only opens inside this app. Photos from your library are never accepted.</p><button id="start" class="big">Open camera</button></div>
+ <div id="banner" hidden><b id="btitle"></b><span id="bmsg"></span><button id="retake" class="big red">Retake</button></div>
+</section>
+<div class="shutterrow"><button id="shoot" class="shutter" aria-label="Capture ticket" disabled></button></div>
+<section id="result" hidden></section>
+<section class="lists"><h2>This session</h2><ol id="session" class="items"></ol>
+<h2>Needs checking <span id="ncount" class="pill red">0</span></h2><p class="hint">Bad or unsure reads land here and are kept out of the dataset until checked.</p><ol id="needs" class="items"></ol>
+<h2>Queued <span id="qcount" class="pill">0</span></h2><ol id="queue" class="items"></ol></section>
+<footer>Concept, design and execution by <a href="https://unlimitedpotential.co.nz">Unlimited Potential</a></footer>
+<canvas id="c" hidden></canvas><script src="/app.js"></script></body></html>

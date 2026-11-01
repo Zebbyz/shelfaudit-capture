@@ -1,0 +1,4 @@
+/cd/*
+  Cache-Control: public, max-age=3600
+/*
+  Permissions-Policy: camera=(self), geolocation=(self)
