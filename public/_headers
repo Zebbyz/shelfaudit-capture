@@ -2,3 +2,12 @@
   Cache-Control: public, max-age=3600
 /*
   Permissions-Policy: camera=(self), geolocation=(self)
+
+/sw.js
+  Cache-Control: no-cache
+/app.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache

@@ -37,11 +37,31 @@ $('#store').addEventListener('focus',e=>{e.target.select();renderList('')});$('#
 $('#storelist').addEventListener('pointerdown',e=>{const li=e.target.closest('li[data-id]');if(!li)return;e.preventDefault();LS.sacap_manual=1;setStore(st.stores.find(s=>s.id==li.dataset.id),'Picked by you.');$('#store').blur()});
 $('#store').addEventListener('blur',()=>setTimeout(()=>{$('#storelist').hidden=true;if(st.store)$('#store').value=st.store.nm},150));
 // ---------- camera ----------
-async function openCam(){try{st.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:2560},height:{ideal:1920}}});
-  $('#v').srcObject=st.stream;await $('#v').play();$('#camoff').hidden=true;$('#shoot').disabled=false;tokens();
-  navigator.geolocation&&navigator.geolocation.watchPosition(p=>{st.pos=p;nearest()},()=>{$('#storehint').textContent='Location is off. Pick your store.'},{enableHighAccuracy:true,maximumAge:15000})}
-  catch(e){fail('Camera blocked','Allow camera access for this app in Settings, then tap Open camera.')}}
-$('#start').onclick=()=>{beep(false);openCam()};
+const CAMERR={NotAllowedError:['Camera blocked','Camera blocked: Settings > Safari > Camera > Allow. If you said no before, open this site in Safari, tap aA > Website Settings > Camera > Allow, then tap Open camera again.'],
+ SecurityError:['Camera blocked','This page is not allowed to use the camera. Open it from https://shelfaudit-capture.pages.dev in Safari.'],
+ NotFoundError:['No camera found','This device did not report a camera. Close other apps using the camera and try again.'],
+ NotReadableError:['Camera busy','Another app is using the camera. Close it (FaceTime, Camera, video calls) and tap Open camera again.'],
+ AbortError:['Camera stopped','The camera was interrupted. Tap Open camera again.'],
+ OverconstrainedError:['Camera settings not supported','The camera could not use the requested settings. Tap Open camera again.'],
+ TypeError:['Camera not available','This browser cannot open the camera here. Open the link in Safari.'],
+ NoMediaDevices:['Camera not available','Camera access is missing. Open https://shelfaudit-capture.pages.dev in Safari (not inside another app), then try again.']};
+st.camErr='none';
+function diag(){const sa=!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches);
+ $('#diag').textContent='secure '+(window.isSecureContext?'yes':'no')+' | camera API '+(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia?'yes':'no')+' | home screen '+(sa?'yes':'no')+' | last error '+st.camErr}
+function camFail(e){const n=(e&&e.name)||'UnknownError';st.camErr=n+(e&&e.message?' ('+String(e.message).slice(0,80)+')':'');diag();
+ const m=CAMERR[n]||['Camera did not open','The camera failed ('+n+'). Tap Open camera again. If it keeps failing, close and reopen the app.'];
+ $('#camerr').textContent=m[0]+'. '+m[1];$('#camerr').hidden=false;$('#start').textContent='Try again';fail(m[0],m[1]);console.warn('camera',e)}
+function camStarted(stream){st.stream=stream;const v=$('#v');v.setAttribute('playsinline','');v.setAttribute('muted','');v.setAttribute('autoplay','');v.muted=true;v.srcObject=stream;
+ const ok=()=>{$('#camoff').hidden=true;$('#camerr').hidden=true;$('#tapplay').hidden=true;$('#shoot').disabled=false;st.camErr='none';diag()};
+ const p=v.play();if(p&&p.then)p.then(ok,()=>{$('#camoff').hidden=true;$('#tapplay').hidden=false;$('#shoot').disabled=false;st.camErr='play blocked';diag()});else ok();
+ tokens();navigator.geolocation&&navigator.geolocation.watchPosition(p=>{st.pos=p;nearest()},()=>{$('#storehint').textContent='Location is off. Pick your store.'},{enableHighAccuracy:true,maximumAge:15000})}
+function openCam(){// iOS: getUserMedia must be called synchronously in the tap, before any await or audio work
+ if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){camFail({name:'NoMediaDevices'});return}
+ let pr;try{pr=navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})}catch(e){camFail(e);return}
+ pr.catch(e=>{if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError'))throw e;return navigator.mediaDevices.getUserMedia({video:true,audio:false})}).then(camStarted,camFail)}
+$('#start').addEventListener('click',()=>{openCam();try{beep(false)}catch(e){}});
+$('#tapplay').addEventListener('click',()=>{$('#v').play().then(()=>{$('#tapplay').hidden=true;st.camErr='none';diag()},camFail)});
+diag();
 function quality(cv){// quick blur (Laplacian variance) and glare (blown pixels) check in the frame box
   const w=320,h=Math.round(320*cv.height/cv.width),t=document.createElement('canvas');t.width=w;t.height=h;const x=t.getContext('2d');x.drawImage(cv,0,0,w,h);
   const d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);for(let i=0;i<w*h;i++)g[i]=.3*d[i*4]+.59*d[i*4+1]+.11*d[i*4+2];
@@ -92,4 +112,4 @@ async function tally(){try{const j=await (await fetch('/api/tally')).json();cons
 function net(){const on=navigator.onLine;$('#net').textContent=on?'Online':'Offline';$('#net').className='pill'+(on?'':' off');if(on)sync()}
 addEventListener('online',net);addEventListener('offline',net);setInterval(sync,30000);
 fetch('/cd/stores.json').then(r=>r.json()).then(s=>{st.stores=s;const id=LS.sacap_store;if(id!==undefined&&id!==''){const x=s.find(y=>y.id==id);if(x)setStore(x,'Last used store. Tap to change.')}nearest()});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');net();renderQ();tally();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'});net();renderQ();tally();
