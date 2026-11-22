@@ -1,4 +1,4 @@
-// Shelf Audit Capture API. Live-camera captures only: every capture must carry an HMAC made with a
+// Shelf price capture API. Live-camera captures only: every capture must carry an HMAC made with a
 // server-issued, short-lived session key, plus capture time, location and the SHA-256 of the image.
 const J=(o,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json','cache-control':'no-store'}});
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');

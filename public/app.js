@@ -1,4 +1,4 @@
-// Shelf Audit Capture. Live camera only: no file input exists anywhere in this app.
+// Shelf price capture. Live camera only: no file input exists anywhere in this app.
 const $=s=>document.querySelector(s),LS=localStorage;
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 const st={stores:[],store:null,pos:null,stream:null,seq:0,session:[],needs:[]};
